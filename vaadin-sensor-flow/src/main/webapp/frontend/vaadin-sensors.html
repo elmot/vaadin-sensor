@@ -1,0 +1,68 @@
+<!doctype html>
+<html>
+<head>
+    <dom-module id="vaadin-geolocation">
+        <template>
+            <!-- shadow DOM goes here -->
+        </template>
+        <script>
+            if (!Polymer.Element) {
+                throw new Error(`Unexpected Polymer version ${Polymer.version} is used, expected v2.0.0 or later.`);
+            }
+
+            class VaadinGeolocation extends Polymer.Element {
+                static get is() {
+                    return "vaadin-geolocation";
+                }
+
+                // noinspection JSUnusedGlobalSymbols
+                static get properties() {
+                    return {
+                        highAccuracy: Boolean,
+                        watch: Boolean,
+                        timeout: Number,
+                        maxAge: Number,
+                        debounce: Number//todo support
+                    };
+                }
+
+                // noinspection JSUnusedGlobalSymbols
+                ready() {
+                    super.ready();
+                    if (this.watch) {
+                        this._start(navigator.geolocation.watchPosition)
+                    }
+                }
+
+                constructor() {
+                    super();
+                }
+
+                // noinspection JSUnusedGlobalSymbols
+                request() {
+                    this._start(navigator.geolocation.getCurrentPosition)
+                }
+
+                _start(method) {
+                    let me = this;
+                    let pos = function (p) {
+                        me.dispatchEvent(new CustomEvent('location', {detail: p}));
+                    };
+                    let err = function (e) {
+                        me.dispatchEvent(new CustomEvent('error', {detail: e}));
+                    };
+                    let options = {
+                        enableHighAccuracy: this.highAccuracy,
+                        timeout: this.timeout,
+                        maximumAge: this.maxAge
+                    };
+                    method.apply(navigator.geolocation,[pos, err, options]);
+                }
+
+            }
+
+            customElements.define(VaadinGeolocation.is, VaadinGeolocation);
+        </script>
+    </dom-module>
+</head>
+</html>
